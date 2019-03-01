@@ -1,9 +1,9 @@
 from flask import render_template,request,redirect,url_for,abort
-from ..models import User, PhotoProfile
+from ..models import Comment,Pitch,User,PhotoProfile
 from . import main
-from .forms import ReviewForm,UpdateProfile
+from .forms import UpdateProfile,CommentForm,UpdateProfile,AddPitchForm
 from ..import db,photos
-from flask_login import login_required
+from flask_login import login_required, current_user
 # Views
 
 @main.route('/')
@@ -13,25 +13,55 @@ def index():
     View root page function that returns the index page and its data
     '''
 
-    # Getting popular movie
-    
-    title = 'Home - Welcome to The best Movie Review Website Online'
-    return render_template('index.html', title = title)
-@main.route('/movie/review/new/<int:id>', methods = ['GET','POST'])
+    title = 'Home - Welcome to The best Pitches Review Website Online'
+    all_pitches = Pitch.query.all()
+ 
+    return render_template('index.html', title = title, all_pitches= all_pitches)
+
+
+@main.route('/pitch/new/', methods = ['GET','POST'])
 @login_required
-def new_review(id):
-    form = ReviewForm()
-    movie = get_movie(id)
+def create_pitches():
+    form = AddPitchForm()
+
 
     if form.validate_on_submit():
-        title = form.title.data
-        review = form.review.data
-        new_review = Review(movie.id,title,movie.poster,review)
-        new_review.save_review()
-        return redirect(url_for('main.movie',movie_id = movie.id ))
+        category = form.category.data
+        content = form.content.data 
 
-    title = f'{movie.title} review'
-    return render_template('new_review.html',title = title, review_form=form, movie=movie)
+        new_pitch = Pitch(description=content, category = category, user=current_user)
+        new_pitch.save_pitch()
+
+        return redirect(url_for('main.index'))
+
+    all_pitches = Pitch.query.all()
+       
+    title = 'Feel free to add a pitch'
+    return render_template('pitches.html',title = title, form=form)
+
+
+@main.route('/comment/new/<int:id>', methods = ['GET','POST'])
+@login_required
+def create_comments(id):
+    form = CommentForm()
+    pitch= Pitch.query.filter_by(id=id).first()
+
+    if form.validate_on_submit():
+        comment = form.comment.data
+        new_comment =Comment(content = comment , pitch= pitch, user=current_user)
+        db.session.add(new_comment)
+        db.session.commit()
+
+    comments = Comment.query.filter_by(pitch_id = id).all()
+
+
+    return render_template('comments.html', form=form ,comments=comments)
+
+@main.route('/pitch/<int:id>')
+def pitch(id):
+    pitch=Pitch.get_pitche(id)
+
+    return render_template('pitch.html',pitch=pitch)
 @main.route('/user/<uname>')
 def profile(uname):
     user = User.query.filter_by(username = uname).first()
