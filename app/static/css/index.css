@@ -1,0 +1,27 @@
+body{
+    background-image: url('https://images.pexels.com/photos/567973/pexels-photo-567973.jpeg');
+    background-size:cover;
+    background-repeat:no-repeat;
+}
+p{
+    text-align:center;
+    font-family: Purisa;
+    font-size:30px;
+    position: relative;
+    top: 40px;
+}
+.comment{
+    text-align:center;
+}
+button{
+    font-size: 20px;
+}
+h1{
+    font-family: Purisa, Bold;
+    text-align: center;
+}
+.navbar-inverse{
+    background-color: #ffe6e6;
+    font-size: 30px;
+    color: black;
+}
